@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HackerOs.App\HackerOs.App.csproj" />
+    <ProjectReference Include="..\..\src\Kazo.Os.App\Kazo.Os.App.csproj" />
   </ItemGroup>
 
 </Project>

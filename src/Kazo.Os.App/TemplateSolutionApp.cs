@@ -1,9 +1,9 @@
-using HackerOs.App.Abstractions;
+using Kazo.Os.App.Abstractions;
 
-namespace HackerOs.App;
+namespace Kazo.Os.App;
 
 /// <summary>
-/// The app's manifest. The build generates <c>manifest.json</c> from this class (HackerOs.App.Build);
+/// The app's manifest. The build generates <c>manifest.json</c> from this class (Kazo.Os.App.Build);
 /// it is never instantiated at run time.
 /// </summary>
 [AppManifest]
@@ -13,11 +13,11 @@ public sealed class TemplateSolutionApp : AppDefinition
     public override string Id => "com.example.my-app";
 
     /// <inheritdoc />
-    public override string Name => "HackerOs.App";
+    public override string Name => "Kazo.Os.App";
 
     /// <summary>
-    /// The app's version. A tag v&lt;version&gt; publishes it to the Hack Store
-    /// (.github/workflows/publish-to-hack-store.yml): change it here, then tag.
+    /// The app's version. A tag v&lt;version&gt; publishes it to the Kazo OS Store
+    /// (.github/workflows/publish-to-kazoos-store.yml): change it here, then tag.
     /// </summary>
     public override string Version => "1.0.0";
 
@@ -31,7 +31,7 @@ public sealed class TemplateSolutionApp : AppDefinition
     public override string PublisherId => "pub.example";
 
     /// <inheritdoc />
-    public override string Description => "A HackerOS window app.";
+    public override string Description => "A Kazo OS window app.";
 
     /// <inheritdoc />
     public override IReadOnlyList<string> Capabilities => [AppCapabilities.FileSystemUserHomeRead];

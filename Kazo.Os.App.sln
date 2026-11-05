@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5A4699D9-813
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{389F8795-F80B-491F-87C5-2184775823FB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerOs.App", "src\HackerOs.App\HackerOs.App.csproj", "{4C1BB375-4AC3-46E7-BACA-28C6F6017AA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kazo.Os.App", "src\Kazo.Os.App\Kazo.Os.App.csproj", "{4C1BB375-4AC3-46E7-BACA-28C6F6017AA7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerOs.App.Os", "src\HackerOs.App.Os\HackerOs.App.Os.csproj", "{27CFFCC2-EFD3-463A-AC47-5674E46BD9C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kazo.Os.App.Os", "src\Kazo.Os.App.Os\Kazo.Os.App.Os.csproj", "{27CFFCC2-EFD3-463A-AC47-5674E46BD9C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerOs.App.Tests", "tests\HackerOs.App.Tests\HackerOs.App.Tests.csproj", "{D95AED01-87CD-4475-807F-724A6C3372BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kazo.Os.App.Tests", "tests\Kazo.Os.App.Tests\Kazo.Os.App.Tests.csproj", "{D95AED01-87CD-4475-807F-724A6C3372BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

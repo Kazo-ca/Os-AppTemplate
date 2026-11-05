@@ -1,6 +1,6 @@
-using HackerOs.App.Abstractions;
+using Kazo.Os.App.Abstractions;
 
-namespace HackerOs.App.Tests;
+namespace Kazo.Os.App.Tests;
 
 /// <summary>The app's manifest class, the source of the generated manifest.json.</summary>
 public sealed class ManifestTests

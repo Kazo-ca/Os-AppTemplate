@@ -14,9 +14,10 @@ This text is shown on the app's page in the Kazo OS Store.
 
 ## Try it
 
-<!-- "Open in Kazo OS" link: https://os.kazo.ca/?autolaunch=<app id> goes here once Kazo OS supports it. -->
+<!-- Replace com.example.my-app with your app id (the Id of the [AppManifest] class). -->
+[Open Kazo.Os.App in Kazo OS](https://os.kazo.ca/?autolaunch=com.example.my-app): the link starts Kazo OS, installs the app from the official Store and opens it.
 
-Open [Kazo OS](https://os.kazo.ca/) and install Kazo.Os.App from the **Kazo OS Store**, or in the Kazo OS
+Or open [Kazo OS](https://os.kazo.ca/) and install Kazo.Os.App from the **Kazo OS Store**, or in the Kazo OS
 Terminal, as an administrator: `sudo kazopkg install <owner>/<repository>`.
 
 ## About Kazo OS

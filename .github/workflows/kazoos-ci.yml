@@ -27,6 +27,14 @@ on:
         description: Run "npm run test:e2e" with Playwright Chromium (end-to-end tests of the app)
         type: boolean
         default: false
+      app-directory:
+        description: Folder of the app project (the one with manifest.json); empty finds the only src/*/manifest.json
+        type: string
+        default: ''
+      trimmed-smoke-test:
+        description: Install the app with kazopkg in the published trimmed Kazo OS and open it (Kazo OS ADR 0281 §4)
+        type: boolean
+        default: true
       timeout-minutes:
         description: Time limit of the job
         type: number
@@ -57,6 +65,12 @@ jobs:
           node-version: '22'
           cache: npm
 
+      # The short test needs Node.js even when the app has no JavaScript tests (no npm cache then).
+      - uses: actions/setup-node@v6
+        if: inputs.trimmed-smoke-test && !inputs.npm-test && !inputs.e2e-test
+        with:
+          node-version: '22'
+
       - name: Check the Kazo OS submodule
         run: bash .github/scripts/check-kazoos-submodule.sh
 
@@ -73,6 +87,83 @@ jobs:
           SOLUTION: ${{ inputs.solution }}
         run: dotnet test $SOLUTION -c Release --no-build
 
+      # Kazo OS ADR 0281 §1-2: the published trimmed OS of the submodule's version and the package
+      # as the Store builds it.
+      - name: Prepare the published trimmed Kazo OS
+        id: trimmed
+        if: inputs.trimmed-smoke-test || inputs.e2e-test
+        env:
+          APP_DIRECTORY: ${{ inputs.app-directory }}
+        run: |
+          harness=external/KazoOs/wasm2/KazoOs/build/app-e2e
+          version=$(sed -n 's:.*<KazoOsVersion>\(.*\)</KazoOsVersion>.*:\1:p' external/KazoOs/wasm2/KazoOs/build/Versions.props)
+          if [ ! -f "$harness/smoke.mjs" ]; then
+            echo "::warning title=Trimmed OS::Kazo OS $version has no app test harness ($harness, ADR 0281): the app is not tested on the trimmed OS. The next Kazo OS SDK update turns it on."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$APP_DIRECTORY" ]; then
+            manifests=$(ls src/*/manifest.json 2>/dev/null || true)
+            if [ "$(printf '%s' "$manifests" | grep -c .)" != 1 ]; then
+              echo "::error title=Trimmed OS::Found $(printf '%s' "$manifests" | grep -c .) src/*/manifest.json: set the app-directory input."
+              exit 1
+            fi
+            APP_DIRECTORY=$(dirname "$manifests")
+          fi
+          os="$RUNNER_TEMP/kazoos-os"
+          mkdir -p "$os"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/kazoos-wasm.zip" \
+            "https://github.com/Kazo-ca/Os/releases/download/v$version/kazoos-wasm-$version.zip"
+          unzip -q "$RUNNER_TEMP/kazoos-wasm.zip" -d "$os"
+          dotnet build "$APP_DIRECTORY" -c Release -t:KazoOsPack --no-restore
+          packages="$APP_DIRECTORY/bin/kazoos-packages"
+          if [ ! -f "$packages/index.json" ]; then
+            echo "::error title=Trimmed OS::KazoOsPack wrote no $packages/index.json."
+            exit 1
+          fi
+          {
+            echo "ready=true"
+            echo "version=$version"
+            echo "wwwroot=$os"
+            echo "packages=$GITHUB_WORKSPACE/$packages"
+            echo "manifest=$GITHUB_WORKSPACE/$APP_DIRECTORY/manifest.json"
+          } >> "$GITHUB_OUTPUT"
+          echo "### Trimmed Kazo OS $version, package from \`$APP_DIRECTORY\`" >> "$GITHUB_STEP_SUMMARY"
+
+      # The harness resolves playwright from its own folder: installed apart and linked there, it
+      # touches neither the app's package.json nor the Kazo OS one.
+      - name: Install Playwright for the short test
+        if: inputs.trimmed-smoke-test && steps.trimmed.outputs.ready == 'true'
+        run: |
+          tools="$RUNNER_TEMP/kazoos-playwright"
+          npm install --prefix "$tools" --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+          ln -sfn "$tools/node_modules" external/KazoOs/wasm2/KazoOs/build/app-e2e/node_modules
+          npx --prefix "$tools" playwright install --with-deps chromium
+
+      - name: Short test on the trimmed Kazo OS
+        if: inputs.trimmed-smoke-test && steps.trimmed.outputs.ready == 'true'
+        env:
+          WWWROOT: ${{ steps.trimmed.outputs.wwwroot }}
+          PACKAGES: ${{ steps.trimmed.outputs.packages }}
+          MANIFEST: ${{ steps.trimmed.outputs.manifest }}
+          REPOSITORY: ${{ github.repository }}
+        run: >-
+          node external/KazoOs/wasm2/KazoOs/build/app-e2e/smoke.mjs
+          --wwwroot "$WWWROOT" --packages "$PACKAGES" --repository "$REPOSITORY" --manifest "$MANIFEST"
+
+      - name: Keep the screenshot of a failed short test
+        if: failure() && inputs.trimmed-smoke-test && steps.trimmed.outputs.ready == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: kazoos-smoke-failure
+          path: kazoos-smoke-failure.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Short test skipped
+        if: ${{ !inputs.trimmed-smoke-test }}
+        run: echo "The short test on the trimmed Kazo OS is turned off (trimmed-smoke-test false, ADR 0281 §4)." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Install the JavaScript test tools
         if: inputs.npm-test || inputs.e2e-test
         run: npm ci
@@ -85,6 +176,12 @@ jobs:
         if: inputs.e2e-test
         run: npx playwright install --with-deps chromium
 
+      # ADR 0281 §5: a suite that uses the shared harness runs on the trimmed OS; one that does not
+      # yet ignores these variables and keeps its own host.
       - name: End-to-end tests
         if: inputs.e2e-test
+        env:
+          KAZOOS_E2E_WWWROOT: ${{ steps.trimmed.outputs.wwwroot }}
+          KAZOOS_E2E_PACKAGES: ${{ steps.trimmed.outputs.packages }}
+          KAZOOS_E2E_REPOSITORY: ${{ steps.trimmed.outputs.ready == 'true' && github.repository || '' }}
         run: npm run test:e2e

@@ -121,6 +121,17 @@ sont courts : ils appellent les workflows partagés de
 changement ici. Sans les secrets de l'automate de Kazo OS, autorisez GitHub Actions à créer des pull
 requests (**Settings** ▸ **Actions** ▸ **General**) pour que la mise à jour ouvre sa pull request.
 
+### Tests sur Kazo OS rogné
+
+La CI fait aussi tourner l'app comme les utilisateurs la reçoivent (ADR 0281 de Kazo OS) : elle
+télécharge Kazo OS rogné publié de la version du sous-module, construit le paquet comme le Store,
+l'installe avec `sudo kazopkg install` et l'ouvre 15 s. Elle échoue quand l'app appelle un membre que
+l'OS rogné a retiré. Les tests de bout en bout (`e2e-test`) reçoivent `KAZOOS_E2E_WWWROOT`,
+`KAZOOS_E2E_PACKAGES` et `KAZOOS_E2E_REPOSITORY` : une suite qui importe le banc commun
+(`external/KazoOs/wasm2/KazoOs/build/app-e2e/kazoos-app-e2e.mjs`) tourne aussi sur cet OS. L'entrée
+`trimmed-smoke-test: false` coupe le test court ; `app-directory` nomme le dossier de l'app quand
+`src/` contient plus d'un `manifest.json`.
+
 ### Publier sur la branche `kazoos-packages`
 
 Le même tag `v*` lance aussi **Publish the Kazo OS packages** : il fait le paquet de l'app et le

@@ -121,6 +121,17 @@ they call the shared workflows of [Kazo-ca/Os-AppTemplate](https://github.com/Ka
 Actions to create pull requests (**Settings** ▸ **Actions** ▸ **General**) for the update to open its
 pull request.
 
+### Tests on the trimmed Kazo OS
+
+The CI also runs the app the way users get it (Kazo OS ADR 0281): it downloads the published
+trimmed Kazo OS of the submodule's version, builds the package as the Store does, installs it with
+`sudo kazopkg install` and opens it for 15 s. It fails when the app calls a member the trimmed OS
+removed. The end-to-end tests (`e2e-test`) get `KAZOOS_E2E_WWWROOT`, `KAZOOS_E2E_PACKAGES` and
+`KAZOOS_E2E_REPOSITORY`: a suite that imports the shared harness
+(`external/KazoOs/wasm2/KazoOs/build/app-e2e/kazoos-app-e2e.mjs`) runs on that OS too. The
+`trimmed-smoke-test: false` input turns the short test off; `app-directory` names the app folder
+when `src/` holds more than one `manifest.json`.
+
 ### Publishing on the `kazoos-packages` branch
 
 The same `v*` tag also runs **Publish the Kazo OS packages**: it packs the app and pushes it to the
